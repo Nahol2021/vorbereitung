@@ -58,7 +58,7 @@ window.AV = window.AV || { arbeiten: [], inhalte: {}, vokabeln: {} };
 const geladen = {};
 function ladeSkript(src) {
   return geladen[src] || (geladen[src] = new Promise((ok, nein) => {
-    const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = () => nein(new Error(src)); document.head.append(s);
+    const s = document.createElement("script"); s.src = src + "?v=" + (window.AV_VERSION || Date.now()); s.onload = ok; s.onerror = () => nein(new Error(src)); document.head.append(s);
   }));
 }
 async function ladeArbeit(id) {

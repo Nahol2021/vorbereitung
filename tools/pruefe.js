@@ -1,9 +1,9 @@
 /* Prüft eine Arbeit: Jede Wortform in den Texten muss in `formen` (→ Navigium-Eintrag aus vokabeln.js) oder in `namen` stehen.
    Außerdem: jedes PPP (#pN) hat ein Bezugswort (#bN). Aufruf: node tools/pruefe.js <arbeit-id> */
 const id = process.argv[2]; global.AV = { inhalte: {}, vokabeln: {} };
-if (!require("fs").existsSync(`${__dirname}/../arbeiten/${id}/vokabeln.js`)) { console.log(`– ${id}: Fach ohne Vokabeln/Texte, nichts zu prüfen.`); process.exit(0); }
 require(`../arbeiten/${id}/vokabeln.js`); require(`../arbeiten/${id}/inhalt.js`);
 const inh = AV.inhalte[id], vok = AV.vokabeln[id];
+if (!inh.texte) { console.log(`– ${id}: Fach ohne Vokabeln/Texte, nichts zu prüfen.`); process.exit(0); }
 const erlaubt = new Set(vok.lektionen.flatMap(l => l.vokabeln.map(v => v.fw)));
 let fehler = 0;
 for (const [f, fw] of Object.entries(inh.formen)) if (!erlaubt.has(fw)) { console.log("✗ Form", f, "→", fw, "ist kein Navigium-Eintrag"); fehler++; }
