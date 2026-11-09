@@ -62,8 +62,10 @@ function ladeSkript(src) {
   }));
 }
 async function ladeArbeit(id) {
-  await ladeSkript(`arbeiten/${id}/vokabeln.js`); await ladeSkript(`arbeiten/${id}/inhalt.js`);
-  return { meta: AV.arbeiten.find(a => a.id === id), inhalt: AV.inhalte[id], vok: AV.vokabeln[id] };
+  const meta = AV.arbeiten.find(a => a.id === id);
+  if (meta?.vokabeln !== false) await ladeSkript(`arbeiten/${id}/vokabeln.js`);   // Fächer ohne Navigium (z. B. Chemie): vokabeln: false
+  await ladeSkript(`arbeiten/${id}/inhalt.js`);
+  return { meta, inhalt: AV.inhalte[id], vok: AV.vokabeln[id] || { lektionen: [] } };
 }
 
 /* ---------- Wörterbuch einer Arbeit und Vokabellücken ---------- */
@@ -460,7 +462,7 @@ function arbeitSeite() {
   if (inhalt.tipp) m.append(h("div", { class: "tipp", html: fett(inhalt.tipp) }));
   const menue = h("div", { class: "menue" });
   inhalt.abschnitte.forEach((ab, i) => { const p = abschnittProzent(ab); menue.append(h("a", { href: `#a/${meta.id}/${ab.id}` }, h("span", { class: "nr" }, ab.symbol || String(i + 1)), h("span", { class: "t" }, ab.titel, h("span", { class: "k" }, ab.kurz)), h("span", { class: "p" }, p == null ? "" : p + " %"))); });
-  menue.append(h("a", { href: "#luecken/" + meta.sprache }, h("span", { class: "nr" }, "?"), h("span", { class: "t" }, "Vokabellücken", h("span", { class: "k" }, "deine angetippten und falschen Wörter")), h("span", { class: "p" }, Object.keys(luecken(meta.sprache)).length + " offen")));
+  if (SPRACHNAME[meta.sprache]) menue.append(h("a", { href: "#luecken/" + meta.sprache }, h("span", { class: "nr" }, "?"), h("span", { class: "t" }, "Vokabellücken", h("span", { class: "k" }, "deine angetippten und falschen Wörter")), h("span", { class: "p" }, Object.keys(luecken(meta.sprache)).length + " offen")));
   m.append(menue);
   if (inhalt.lernplan) {
     const plan = speicher.get("plan:" + meta.id, {});
@@ -473,6 +475,7 @@ const BLOCK = {
   tipp: b => h("div", { class: "tipp", html: fett(b.html) }),
   regel: b => h("section", { class: "karte" }, b.titel ? h("h3", { style: "margin-bottom:6px" }, b.titel) : null, h("div", { html: fett(b.html) })),
   tafel: b => h("section", { class: "karte" }, b.titel ? h("h3", { style: "margin-bottom:8px" }, b.titel) : null, h("div", { class: "tab" }, h("table", {}, h("tr", {}, b.kopf.map(k => h("th", {}, k))), b.zeilen.map(z => h("tr", {}, z.map((c, j) => h(j ? "td" : "th", { html: fett(c) }))))))),
+  bild: b => h("section", { class: "karte" }, b.titel ? h("h3", { style: "margin-bottom:6px" }, b.titel) : null, h("div", { html: b.html }), b.unter ? h("p", { class: "leise", html: fett(b.unter) }) : null),
   uebung: b => UEBUNG[b.art](b),
   vokFilter: () => vokFilter(), vokBedeutung: () => vokBedeutung(), vokKarten: () => vokKarten(), vokSchreiben: () => vokSchreiben()
 };
@@ -504,7 +507,7 @@ function abschnittSeite(ab) {
 async function lueckenSeite(sp) {
   document.body.setAttribute("data-sprache", sp); kopf(["#", "alle Arbeiten"]);
   // Wörterbuch aller Arbeiten dieser Sprache laden (für die Ablenker)
-  const ids = AV.arbeiten.filter(a => a.sprache === sp).map(a => a.id);
+  const ids = AV.arbeiten.filter(a => a.sprache === sp && a.vokabeln !== false).map(a => a.id);
   await Promise.all(ids.map(id => ladeSkript(`arbeiten/${id}/vokabeln.js`).catch(() => null)));
   const lex = ids.flatMap(id => (AV.vokabeln[id]?.lektionen || []).flatMap(l => l.vokabeln));
   const m = main(); m.innerHTML = "";

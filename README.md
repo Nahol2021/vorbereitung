@@ -25,3 +25,9 @@ Abschnitt mit `probe: true` = Probearbeit mit Zeit und Auswertung.
 ## Vokabellücken
 Angetippte Wörter und falsch beantwortete Vokabeln landen pro Sprache in einer Lückenliste (im Browser gespeichert).
 Ein Wort verlässt die Liste nach 3× richtig hintereinander.
+
+## Fächer ohne Vokabeln (z. B. Chemie)
+In `arbeiten.js` `vokabeln: false` setzen und eine eigene `sprache`-Kennung mit Farbe in `style.css` (Chemie: `ch`, Blaugrün).
+Dann gibt es nur `inhalt.js` (keine Texte/formen/namen), keinen Vokabellücken-Link, `pruefe.js` überspringt die Arbeit.
+Baustein `bild` (`{typ:"bild", titel, html, unter}`) zeigt Zeichnungen; Strukturformeln baut der Helfer `M()` in
+`arbeiten/chemie9-bindungen/inhalt.js` (Atome, Bindungen inkl. Keil/Strich, freie Paare, δ-Ladungen) – wiederverwendbar.
